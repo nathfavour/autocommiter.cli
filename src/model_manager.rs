@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -121,8 +121,9 @@ pub async fn fetch_available_models(api_key: &str) -> Result<Vec<ModelInfo>> {
 }
 
 fn get_models_cache_file() -> Result<std::path::PathBuf> {
-    let cache_dir = crate::config::get_config_dir()?;
-    Ok(cache_dir.join("models.json"))
+    let home = dirs::home_dir()
+        .ok_or_else(|| anyhow!("Could not determine home directory"))?;
+    Ok(home.join(".autocommiter.models.json"))
 }
 
 pub fn get_cached_models() -> Result<Vec<ModelInfo>> {

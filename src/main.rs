@@ -32,11 +32,7 @@ enum Commands {
         #[arg(short, long, help = "Skip pushing after commit")]
         no_push: bool,
 
-        #[arg(
-            short,
-            long,
-            help = "Don't ask for confirmation before committing"
-        )]
+        #[arg(short, long, help = "Don't ask for confirmation before committing")]
         force: bool,
     },
 
@@ -49,7 +45,10 @@ enum Commands {
     #[command(name = "get-api-key", about = "Get stored API key")]
     GetApiKey,
 
-    #[command(name = "refresh-models", about = "Refresh available AI models from GitHub Models API")]
+    #[command(
+        name = "refresh-models",
+        about = "Refresh available AI models from GitHub Models API"
+    )]
     RefreshModels,
 
     #[command(name = "list-models", about = "List available AI models")]
@@ -84,9 +83,7 @@ async fn main() -> Result<()> {
             repo,
             no_push,
             force,
-        }) => {
-            generate_commit(repo.as_deref(), no_push, force).await
-        }
+        }) => generate_commit(repo.as_deref(), no_push, force).await,
         Some(Commands::SetApiKey { key }) => set_api_key(key).await,
         Some(Commands::GetApiKey) => get_api_key(),
         Some(Commands::RefreshModels) => refresh_models().await,
@@ -96,9 +93,7 @@ async fn main() -> Result<()> {
         Some(Commands::ToggleGitmoji) => toggle_gitmoji(),
         Some(Commands::GetConfig) => get_config(),
         Some(Commands::ResetConfig) => reset_config(),
-        None => {
-            generate_commit(None, false, false).await
-        }
+        None => generate_commit(None, false, false).await,
     }
 }
 
@@ -195,7 +190,11 @@ async fn try_api_generation(
         .clone()
         .unwrap_or_else(|| "gpt-4o-mini".to_string());
 
-    println!("{} {}...", "🤖 Generating with model:".cyan(), model.dimmed());
+    println!(
+        "{} {}...",
+        "🤖 Generating with model:".cyan(),
+        model.dimmed()
+    );
 
     let file_changes = changes_summarizer::build_file_changes(repo_root).await?;
     let file_names = file_changes
@@ -206,8 +205,8 @@ async fn try_api_generation(
         .join("\n");
     let compressed_json = changes_summarizer::compress_to_json(&file_changes, 400);
 
-    let message = api_client::generate_commit_message(api_key, &file_names, &compressed_json, &model)
-        .await?;
+    let message =
+        api_client::generate_commit_message(api_key, &file_names, &compressed_json, &model).await?;
 
     // Apply gitmoji if enabled
     let message = if config.enable_gitmoji.unwrap_or(false) {
@@ -223,7 +222,10 @@ async fn set_api_key(key: Option<String>) -> Result<()> {
     let key_to_set = if let Some(key) = key {
         key
     } else {
-        print!("{}", "Enter GitHub API key (will be stored securely): ".cyan());
+        print!(
+            "{}",
+            "Enter GitHub API key (will be stored securely): ".cyan()
+        );
         io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
@@ -251,7 +253,10 @@ fn get_api_key() -> Result<()> {
             Ok(())
         }
         None => {
-            println!("{}", "ℹ️  No API key set. Use 'set-api-key' to add one.".yellow());
+            println!(
+                "{}",
+                "ℹ️  No API key set. Use 'set-api-key' to add one.".yellow()
+            );
             Ok(())
         }
     }
@@ -299,7 +304,12 @@ async fn select_model() -> Result<()> {
 
     println!("{}\n", "🤖 Select a Model:".cyan().bold());
     for (idx, model) in models.iter().enumerate() {
-        println!("{}. {} ({})", idx + 1, model.name.cyan(), model.friendly_name.as_ref().unwrap_or(&model.name).dimmed());
+        println!(
+            "{}. {} ({})",
+            idx + 1,
+            model.name.cyan(),
+            model.friendly_name.as_ref().unwrap_or(&model.name).dimmed()
+        );
     }
 
     print!("\n{}", "Enter choice (1-{}): ".cyan());
@@ -308,7 +318,10 @@ async fn select_model() -> Result<()> {
 
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
-    let choice: usize = input.trim().parse().map_err(|_| anyhow!("Invalid choice"))?;
+    let choice: usize = input
+        .trim()
+        .parse()
+        .map_err(|_| anyhow!("Invalid choice"))?;
 
     if choice < 1 || choice > models.len() {
         return Err(anyhow!("Choice out of range"));
@@ -346,7 +359,7 @@ fn toggle_gitmoji() -> Result<()> {
 fn get_config() -> Result<()> {
     let config = config::load_config()?;
     println!("{}\n", "⚙️  Configuration:".cyan().bold());
-    
+
     println!("{}:", "API Key".cyan());
     match &config.api_key {
         Some(key) => {
@@ -361,10 +374,7 @@ fn get_config() -> Result<()> {
     }
 
     println!("\n{}:", "Selected Model".cyan());
-    println!(
-        "  {}",
-        config.selected_model.unwrap_or_default().yellow()
-    );
+    println!("  {}", config.selected_model.unwrap_or_default().yellow());
 
     println!("\n{}:", "Gitmoji Enabled".cyan());
     println!(

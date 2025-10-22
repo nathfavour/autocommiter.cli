@@ -29,17 +29,10 @@ impl Default for Config {
     }
 }
 
-pub fn get_config_dir() -> Result<PathBuf> {
-    let config_dir = dirs::config_dir()
-        .ok_or_else(|| anyhow!("Could not determine config directory"))?
-        .join("autocommiter");
-
-    fs::create_dir_all(&config_dir)?;
-    Ok(config_dir)
-}
-
 pub fn get_config_file() -> Result<PathBuf> {
-    Ok(get_config_dir()?.join("config.json"))
+    let home = dirs::home_dir()
+        .ok_or_else(|| anyhow!("Could not determine home directory"))?;
+    Ok(home.join(".autocommiter.json"))
 }
 
 pub fn load_config() -> Result<Config> {
