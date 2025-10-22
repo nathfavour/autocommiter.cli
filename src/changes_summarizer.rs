@@ -38,24 +38,22 @@ pub async fn analyze_file_change(cwd: &str, file: &str) -> Result<String> {
 
             Ok("mod".to_string())
         }
-        Err(_) => {
-            match crate::git::get_staged_diff_unified(cwd, file) {
-                Ok(hunks) => {
-                    let first = hunks
-                        .lines()
-                        .map(|l| l.trim())
-                        .find(|l| !l.is_empty())
-                        .unwrap_or("mod");
-                    let truncated = &first[..std::cmp::min(40, first.len())];
-                    let collapsed = Regex::new(r"\s+")
-                        .ok()
-                        .and_then(|r| Some(r.replace_all(truncated, " ").to_string()))
-                        .unwrap_or_else(|| truncated.to_string());
-                    Ok(collapsed)
-                }
-                Err(_) => Ok("err".to_string()),
+        Err(_) => match crate::git::get_staged_diff_unified(cwd, file) {
+            Ok(hunks) => {
+                let first = hunks
+                    .lines()
+                    .map(|l| l.trim())
+                    .find(|l| !l.is_empty())
+                    .unwrap_or("mod");
+                let truncated = &first[..std::cmp::min(40, first.len())];
+                let collapsed = Regex::new(r"\s+")
+                    .ok()
+                    .and_then(|r| Some(r.replace_all(truncated, " ").to_string()))
+                    .unwrap_or_else(|| truncated.to_string());
+                Ok(collapsed)
             }
-        }
+            Err(_) => Ok("err".to_string()),
+        },
     }
 }
 
@@ -119,12 +117,7 @@ pub fn compress_to_json(file_changes: &[FileChange], max_len: usize) -> String {
         .iter()
         .take(1)
         .map(|fc| {
-            let filename = fc
-                .file
-                .split('/')
-                .last()
-                .unwrap_or(&fc.file)
-                .to_string();
+            let filename = fc.file.split('/').last().unwrap_or(&fc.file).to_string();
             FileChange {
                 file: filename,
                 change: "mod".to_string(),

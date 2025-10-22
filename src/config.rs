@@ -74,7 +74,9 @@ pub fn set_api_key(key: String) -> Result<()> {
 
 pub fn get_selected_model() -> Result<String> {
     let config = load_config()?;
-    Ok(config.selected_model.unwrap_or_else(|| "gpt-4o-mini".to_string()))
+    Ok(config
+        .selected_model
+        .unwrap_or_else(|| "gpt-4o-mini".to_string()))
 }
 
 pub fn set_selected_model(model: String) -> Result<()> {

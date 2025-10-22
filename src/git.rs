@@ -45,7 +45,10 @@ pub fn get_staged_files(cwd: &str) -> Result<Vec<String>> {
 }
 
 pub fn get_staged_diff_numstat(cwd: &str, file: &str) -> Result<String> {
-    let cmd = format!("git diff --staged --numstat -- \"{}\"", file.replace("\"", "\\\""));
+    let cmd = format!(
+        "git diff --staged --numstat -- \"{}\"",
+        file.replace("\"", "\\\"")
+    );
     run_git_command(&cmd, cwd)
 }
 
@@ -58,8 +61,8 @@ pub fn get_staged_diff_unified(cwd: &str, file: &str) -> Result<String> {
 }
 
 pub fn commit_with_message(cwd: &str, message: &str) -> Result<()> {
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     let mut file = NamedTempFile::new()?;
     file.write_all(message.as_bytes())?;
