@@ -30,8 +30,7 @@ impl Default for Config {
 }
 
 pub fn get_config_file() -> Result<PathBuf> {
-    let home = dirs::home_dir()
-        .ok_or_else(|| anyhow!("Could not determine home directory"))?;
+    let home = dirs::home_dir().ok_or_else(|| anyhow!("Could not determine home directory"))?;
     Ok(home.join(".autocommiter.json"))
 }
 
