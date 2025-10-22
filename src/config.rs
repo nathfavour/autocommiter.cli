@@ -83,12 +83,14 @@ pub fn is_gitmoji_enabled() -> Result<bool> {
     Ok(config.enable_gitmoji.unwrap_or(false))
 }
 
+#[allow(dead_code)]
 pub fn set_gitmoji_enabled(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.enable_gitmoji = Some(enabled);
     save_config(&config)
 }
 
+#[allow(dead_code)]
 pub fn get_gitignore_patterns() -> Result<Vec<String>> {
     let config = load_config()?;
     Ok(config.gitignore_patterns.unwrap_or_else(|| {
