@@ -2,6 +2,8 @@
 name = "autocommiter"
 version = "0.1.0"
 edition = "2021"
+description = "automatically commit and source control"
+license = "MIT"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
