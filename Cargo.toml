@@ -1,8 +1,8 @@
 [package]
 name = "autocommiter"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-description = "automatically commit and source control"
+description = "Auto-generate git commit messages using AI"
 license = "MIT"
 
 [dependencies]
