@@ -44,6 +44,14 @@ optionally push.
 ./target/release/autocommiter toggle-gitmoji
 ```
 
+5. Toggle skip confirmation
+
+```bash
+./target/release/autocommiter toggle-skip-confirmation
+```
+
+This allows autocommit to proceed without prompting for confirmation.
+
 Configuration file
 
 The config file is `~/.autocommiter.json`. Fields:
@@ -51,6 +59,8 @@ The config file is `~/.autocommiter.json`. Fields:
 - api_key: string | null — API key used by `api_client`
 - selected_model: string — default model id (e.g., `gpt-4o-mini`)
 - enable_gitmoji: bool — whether to prepend gitmoji
+- skip_confirmation: bool — whether to skip commit confirmation prompt (enabled
+  via `toggle-skip-confirmation` or CLI `--force` flag)
 - update_gitignore: bool — whether the tool should append recommended patterns
   to the repository's `.gitignore`
 - gitignore_patterns: [string] — list of patterns to ensure are in `.gitignore`
@@ -73,3 +83,9 @@ Developer notes
 
 - Run tests for the summarizer with `cargo test -p autocommiter`.
 - Generate docs locally with `cargo doc --no-deps`.
+
+CLI flags
+
+- `--force` or `-f`: Skip confirmation prompt for a single run
+- `--no-push` or `-n`: Skip pushing after commit
+- `--repo <PATH>`: Specify a different git repository (defaults to current directory)

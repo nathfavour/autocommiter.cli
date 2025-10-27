@@ -63,6 +63,12 @@ enum Commands {
     #[command(name = "toggle-gitmoji", about = "Enable/disable gitmoji prefixes")]
     ToggleGitmoji,
 
+    #[command(
+        name = "toggle-skip-confirmation",
+        about = "Enable/disable skipping commit confirmation"
+    )]
+    ToggleSkipConfirmation,
+
     #[command(name = "get-config", about = "Display current configuration")]
     GetConfig,
 
@@ -91,6 +97,7 @@ async fn main() -> Result<()> {
         Some(Commands::SelectModel) => select_model().await,
         Some(Commands::GetModel) => get_model(),
         Some(Commands::ToggleGitmoji) => toggle_gitmoji(),
+        Some(Commands::ToggleSkipConfirmation) => toggle_skip_confirmation(),
         Some(Commands::GetConfig) => get_config(),
         Some(Commands::ResetConfig) => reset_config(),
         None => generate_commit(None, false, false).await,
@@ -138,8 +145,10 @@ async fn generate_commit(repo_path: Option<&str>, no_push: bool, force: bool) ->
     let message = generate_message(&repo_root).await?;
     println!("{} {}", "💬 Message:".cyan(), message.italic());
 
-    // Ask for confirmation if not forced
-    if !force {
+    // Ask for confirmation if not forced and config allows
+    let config = config::load_config()?;
+    let skip_conf = config.skip_confirmation.unwrap_or(false);
+    if !force && !skip_conf {
         print!("{}", "\n🤔 Proceed with commit? (y/n): ".cyan());
         io::stdout().flush()?;
         let mut input = String::new();
@@ -356,6 +365,23 @@ fn toggle_gitmoji() -> Result<()> {
     Ok(())
 }
 
+fn toggle_skip_confirmation() -> Result<()> {
+    let config = config::load_config()?;
+    let current = config.skip_confirmation.unwrap_or(false);
+    let new_value = !current;
+
+    let mut new_config = config;
+    new_config.skip_confirmation = Some(new_value);
+    config::save_config(&new_config)?;
+
+    if new_value {
+        println!("{} {}", "✓ Skip Confirmation".green(), "enabled".green());
+    } else {
+        println!("{} {}", "✓ Skip Confirmation".green(), "disabled".yellow());
+    }
+    Ok(())
+}
+
 fn get_config() -> Result<()> {
     let config = config::load_config()?;
     println!("{}\n", "⚙️  Configuration:".cyan().bold());
@@ -390,6 +416,16 @@ fn get_config() -> Result<()> {
     println!(
         "  {}",
         if config.update_gitignore.unwrap_or(false) {
+            "Yes".green()
+        } else {
+            "No".red()
+        }
+    );
+
+    println!("\n{}:", "Skip Confirmation".cyan());
+    println!(
+        "  {}",
+        if config.skip_confirmation.unwrap_or(false) {
             "Yes".green()
         } else {
             "No".red()

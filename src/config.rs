@@ -9,6 +9,7 @@ pub struct Config {
     pub selected_model: Option<String>,
     pub enable_gitmoji: Option<bool>,
     pub update_gitignore: Option<bool>,
+    pub skip_confirmation: Option<bool>,
     pub gitignore_patterns: Option<Vec<String>>,
 }
 
@@ -19,6 +20,7 @@ impl Default for Config {
             selected_model: Some("gpt-4o-mini".to_string()),
             enable_gitmoji: Some(false),
             update_gitignore: Some(false),
+            skip_confirmation: Some(false),
             gitignore_patterns: Some(vec![
                 "*.env*".to_string(),
                 ".env*".to_string(),
@@ -77,6 +79,7 @@ pub fn set_selected_model(model: String) -> Result<()> {
     save_config(&config)
 }
 
+#[allow(dead_code)]
 pub fn is_gitmoji_enabled() -> Result<bool> {
     let config = load_config()?;
     Ok(config.enable_gitmoji.unwrap_or(false))
@@ -100,4 +103,17 @@ pub fn get_gitignore_patterns() -> Result<Vec<String>> {
             ".docx/".to_string(),
         ]
     }))
+}
+
+#[allow(dead_code)]
+pub fn is_skip_confirmation_enabled() -> Result<bool> {
+    let config = load_config()?;
+    Ok(config.skip_confirmation.unwrap_or(false))
+}
+
+#[allow(dead_code)]
+pub fn set_skip_confirmation(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.skip_confirmation = Some(enabled);
+    save_config(&config)
 }

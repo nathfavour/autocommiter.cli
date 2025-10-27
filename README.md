@@ -9,6 +9,7 @@ Key features
 - Generate commit messages from staged changes
 - Optional AI model integration (configurable model list)
 - Gitmoji support to prepend an emoji that matches the change
+- Skip confirmation prompts (via CLI flag or persistent config)
 - Safe `.gitignore` management to avoid accidentally committing secrets
 
 Quick start
