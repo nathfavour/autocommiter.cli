@@ -105,32 +105,46 @@ async fn main() -> Result<()> {
 }
 
 async fn generate_commit(repo_path: Option<&str>, no_push: bool, force: bool) -> Result<()> {
-    let cwd = repo_path.unwrap_or(".");
+    let start_dir = repo_path.unwrap_or(".");
 
-    println!("{}", "🪄 Autocommiter: Generating commit...".cyan());
+    println!("{}", "🪄 Autocommiter: Discovering repositories...".cyan());
+    let repos = git::discover_repositories(start_dir);
 
-    // Check if it's a git repo
-    if !git::is_git_repository(cwd) {
-        return Err(anyhow!("Not a git repository"));
+    if repos.is_empty() {
+        return Err(anyhow!("No git repositories found in {}", start_dir));
     }
 
-    let repo_root = git::get_repo_root(cwd)?;
-    println!("{} {}", "📂 Repository:".cyan(), repo_root.dimmed());
+    if repos.len() > 1 {
+        println!("{} Found {} repositories\n", "✓".green(), repos.len());
+    }
+
+    for repo in repos {
+        if let Err(e) = process_single_repo(&repo, no_push, force).await {
+            eprintln!("{} Error processing {}: {}\n", "✗".red(), repo.dimmed(), e);
+        }
+    }
+
+    println!("{}", "✨ All done!".green().bold());
+    Ok(())
+}
+
+async fn process_single_repo(repo_root: &str, no_push: bool, force: bool) -> Result<()> {
+    println!("{} {}", "📂 Repository:".cyan(), repo_root.bold());
 
     // Ensure gitignore safety
     println!("{}", "🛡️  Ensuring .gitignore safety...".cyan());
-    ensure_gitignore_safety(&repo_root)?;
+    ensure_gitignore_safety(repo_root)?;
 
     // Stage changes
     println!("{}", "📦 Staging changes...".cyan());
-    git::stage_all_changes(&repo_root)?;
+    git::stage_all_changes(repo_root)?;
 
     // Check for staged files
     println!("{}", "📋 Checking staged changes...".cyan());
-    let staged_files = git::get_staged_files(&repo_root)?;
+    let staged_files = git::get_staged_files(repo_root)?;
     if staged_files.is_empty() {
         println!(
-            "{}",
+            "{}\n",
             "ℹ️  No changes to commit — Autocommit skipped.".yellow()
         );
         return Ok(());
@@ -142,7 +156,7 @@ async fn generate_commit(repo_path: Option<&str>, no_push: bool, force: bool) ->
     }
 
     // Generate message
-    let message = generate_message(&repo_root).await?;
+    let message = generate_message(repo_root).await?;
     println!("{} {}", "💬 Message:".cyan(), message.italic());
 
     // Ask for confirmation if not forced and config allows
@@ -154,24 +168,24 @@ async fn generate_commit(repo_path: Option<&str>, no_push: bool, force: bool) ->
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
         if !input.trim().eq_ignore_ascii_case("y") {
-            println!("{}", "❌ Cancelled.".red());
+            println!("{}\n", "❌ Cancelled.".red());
             return Ok(());
         }
     }
 
     // Commit
     println!("{}", "✍️  Committing changes...".cyan());
-    git::commit_with_message(&repo_root, &message)?;
+    git::commit_with_message(repo_root, &message)?;
     println!("{}", "✓ Commit successful!".green());
 
     // Push
     if !no_push {
         println!("{}", "🚀 Pushing to remote...".cyan());
-        git::push_changes(&repo_root)?;
+        git::push_changes(repo_root)?;
         println!("{}", "✓ Push successful!".green());
     }
 
-    println!("{}", "✨ Done!".green().bold());
+    println!("{}\n", "✓ Done with this repository!".green());
     Ok(())
 }
 

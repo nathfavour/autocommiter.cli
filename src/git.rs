@@ -1,4 +1,6 @@
 use anyhow::{anyhow, Result};
+use ignore::WalkBuilder;
+use std::path::Path;
 use std::process::Command;
 
 pub fn run_git_command(cmd: &str, cwd: &str) -> Result<String> {
@@ -86,4 +88,49 @@ pub fn is_git_repository(cwd: &str) -> bool {
 
 pub fn get_repo_root(cwd: &str) -> Result<String> {
     run_git_command("git rev-parse --show-toplevel", cwd)
+}
+
+pub fn discover_repositories(root: &str) -> Vec<String> {
+    let mut repos = Vec::new();
+    let root_path = Path::new(root);
+
+    // 1. Check if we are inside a git repo and add its root
+    if let Ok(toplevel) = get_repo_root(root) {
+        if let Ok(abs_toplevel) = Path::new(&toplevel).canonicalize() {
+            if let Some(s) = abs_toplevel.to_str() {
+                repos.push(s.to_string());
+            }
+        }
+    }
+
+    // 2. Search for sub-repositories
+    let walker = WalkBuilder::new(root)
+        .hidden(false)
+        .filter_entry(|entry| {
+            let name = entry.file_name().to_str().unwrap_or("");
+            if name == ".git" || name == "node_modules" || name == "target" {
+                return false;
+            }
+            true
+        })
+        .build();
+
+    for entry in walker {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            if entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false) {
+                if path.join(".git").exists() {
+                    if let Ok(abs_path) = path.canonicalize() {
+                        if let Some(path_str) = abs_path.to_str() {
+                            repos.push(path_str.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    repos.sort();
+    repos.dedup();
+    repos
 }
