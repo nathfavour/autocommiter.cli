@@ -82,17 +82,12 @@ pub fn push_changes(cwd: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn is_git_repository(cwd: &str) -> bool {
-    run_git_command("git rev-parse --git-dir", cwd).is_ok()
-}
-
 pub fn get_repo_root(cwd: &str) -> Result<String> {
     run_git_command("git rev-parse --show-toplevel", cwd)
 }
 
 pub fn discover_repositories(root: &str) -> Vec<String> {
     let mut repos = Vec::new();
-    let root_path = Path::new(root);
 
     // 1. Check if we are inside a git repo and add its root
     if let Ok(toplevel) = get_repo_root(root) {
