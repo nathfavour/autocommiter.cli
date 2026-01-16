@@ -8,3 +8,4 @@ target/
 docx/
 # Added by Autocommiter: ensure .docx/
 .docx/
+autocommiter.go/
