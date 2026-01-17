@@ -1,11 +1,43 @@
+# Rust
 /target
-target/
-# Added by Autocommiter: ensure *.env*
-*.env*
-# Added by Autocommiter: ensure .env*
-.env*
-# Added by Autocommiter: ensure docx/
+Cargo.lock
+
+# Go
+# Do not ignore the source directory!
+# autocommiter.go/ 
+
+# Ignore Go binaries
+autocommiter.go/autocommiter
+autocommiter.go/autocommiter.exe
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
 docx/
-# Added by Autocommiter: ensure .docx/
 .docx/
-autocommiter.go/
