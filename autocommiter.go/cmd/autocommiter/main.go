@@ -18,18 +18,12 @@ var (
 	repoPath string
 	noPush   bool
 	force    bool
-
-	// Version metadata (injected by GoReleaser)
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
 )
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use:     "autocommiter",
-		Short:   "Auto-generate git commit messages using AI",
-		Version: fmt.Sprintf("%s (%s, %s)", version, commit, date),
+		Use:   "autocommiter",
+		Short: "Auto-generate git commit messages using AI",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return processor.GenerateCommit(repoPath, noPush, force)
 		},
@@ -319,17 +313,6 @@ func main() {
 		},
 	}
 	rootCmd.AddCommand(resetConfigCmd)
-
-	var versionCmd = &cobra.Command{
-		Use:   "version",
-		Short: "Print the version number of autocommiter",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("autocommiter version %s\n", version)
-			fmt.Printf("commit: %s\n", commit)
-			fmt.Printf("build date: %s\n", date)
-		},
-	}
-	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
